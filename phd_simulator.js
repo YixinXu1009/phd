@@ -1026,6 +1026,24 @@
         ctx.beginPath();
         ctx.arc(p.x + p.w + 2, p.y + 13 + sweatShift, 1.9, 0, Math.PI * 2);
         ctx.fill();
+
+        const bubbleW = 122;
+        const bubbleH = 24;
+        const bubbleX = p.x - 44;
+        const bubbleY = p.y - 34;
+        ctx.fillStyle = 'rgba(14, 18, 34, 0.9)';
+        ctx.fillRect(bubbleX, bubbleY, bubbleW, bubbleH);
+        ctx.beginPath();
+        ctx.moveTo(p.x + 8, bubbleY + bubbleH);
+        ctx.lineTo(p.x + 14, bubbleY + bubbleH + 8);
+        ctx.lineTo(p.x + 20, bubbleY + bubbleH);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#9db4e8';
+        ctx.strokeRect(bubbleX, bubbleY, bubbleW, bubbleH);
+        ctx.fillStyle = '#eef3ff';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('I am exhausted', bubbleX + 10, bubbleY + 16);
       }
     }
 
