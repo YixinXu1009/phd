@@ -773,28 +773,82 @@
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
     const sky = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-    sky.addColorStop(0, '#7ec6ff');
-    sky.addColorStop(1, '#d8efff');
+    sky.addColorStop(0, '#0b0d18');
+    sky.addColorStop(0.55, '#191c34');
+    sky.addColorStop(1, '#25253a');
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-    ctx.fillStyle = '#8ccf90';
-    for (let i = 0; i < 7; i += 1) {
-      const x = i * 180 - (run.distance * 0.15) % 180;
+    // Moon and glow.
+    const moonX = WIDTH - 150;
+    const moonY = 92;
+    const moonGlow = ctx.createRadialGradient(moonX, moonY, 8, moonX, moonY, 90);
+    moonGlow.addColorStop(0, 'rgba(220, 226, 255, 0.45)');
+    moonGlow.addColorStop(1, 'rgba(220, 226, 255, 0)');
+    ctx.fillStyle = moonGlow;
+    ctx.beginPath();
+    ctx.arc(moonX, moonY, 90, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#d7ddf9';
+    ctx.beginPath();
+    ctx.arc(moonX, moonY, 28, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Distant mountains.
+    ctx.fillStyle = '#1e2239';
+    for (let i = 0; i < 9; i += 1) {
+      const x = i * 150 - (run.distance * 0.07) % 150 - 60;
+      const peakY = 230 + ((i * 37) % 70);
       ctx.beginPath();
-      ctx.moveTo(x, HEIGHT);
-      ctx.quadraticCurveTo(x + 40, 320, x + 90, HEIGHT);
+      ctx.moveTo(x, GROUND_Y + 8);
+      ctx.lineTo(x + 48, peakY);
+      ctx.lineTo(x + 108, GROUND_Y + 8);
       ctx.fill();
     }
 
-    ctx.fillStyle = '#6fb25f';
+    // Mid-ground spooky trees and ruins.
+    ctx.fillStyle = '#1a1c2f';
+    for (let i = 0; i < 10; i += 1) {
+      const tx = i * 120 - (run.distance * 0.22) % 120 + 20;
+      const baseY = GROUND_Y - 10;
+      ctx.fillRect(tx, baseY - 65, 8, 65);
+      ctx.beginPath();
+      ctx.moveTo(tx + 4, baseY - 48);
+      ctx.lineTo(tx - 18, baseY - 70);
+      ctx.lineTo(tx + 3, baseY - 62);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(tx + 4, baseY - 36);
+      ctx.lineTo(tx + 24, baseY - 56);
+      ctx.lineTo(tx + 6, baseY - 49);
+      ctx.fill();
+      if (i % 3 === 1) {
+        ctx.fillRect(tx + 20, baseY - 40, 12, 40);
+        ctx.fillRect(tx + 34, baseY - 24, 5, 24);
+      }
+    }
+
+    // Uneven haunted ground silhouette.
+    ctx.fillStyle = '#2a2c3f';
     ctx.fillRect(0, GROUND_Y, WIDTH, HEIGHT - GROUND_Y);
-    ctx.fillStyle = '#8f6135';
-    ctx.fillRect(0, GROUND_Y + 10, WIDTH, HEIGHT - GROUND_Y);
+    ctx.fillStyle = '#1d1f2f';
+    for (let i = 0; i < 14; i += 1) {
+      const x = i * 80 - (run.distance * 0.34) % 80;
+      const w = 40 + (i % 3) * 16;
+      const h = 5 + (i % 4) * 4;
+      ctx.fillRect(x, GROUND_Y - h, w, h);
+    }
+
+    // Low fog layer.
+    const fog = ctx.createLinearGradient(0, GROUND_Y - 70, 0, HEIGHT);
+    fog.addColorStop(0, 'rgba(190, 200, 255, 0)');
+    fog.addColorStop(1, 'rgba(180, 190, 240, 0.15)');
+    ctx.fillStyle = fog;
+    ctx.fillRect(0, GROUND_Y - 70, WIDTH, HEIGHT - GROUND_Y + 70);
 
     for (const e of run.entities) {
       if (e.type === 'spike') {
-        ctx.fillStyle = '#c34a4a';
+        ctx.fillStyle = '#b14d72';
         const n = Math.floor(e.w / 10);
         for (let i = 0; i < n; i += 1) {
           const sx = e.x + i * 10;
@@ -805,23 +859,23 @@
           ctx.fill();
         }
       } else if (e.type === 'enemy') {
-        ctx.fillStyle = '#7a4128';
+        ctx.fillStyle = '#6d3554';
         ctx.fillRect(e.x, e.y, e.w, e.h);
         ctx.fillStyle = '#111';
         ctx.fillRect(e.x + 6, e.y + 12, 4, 4);
         ctx.fillRect(e.x + 19, e.y + 12, 4, 4);
       } else if (e.type === 'turtle') {
-        ctx.fillStyle = '#2f9348';
+        ctx.fillStyle = '#2f6a52';
         ctx.fillRect(e.x, e.y + 8, e.w, e.h - 8);
-        ctx.fillStyle = '#1f6a34';
+        ctx.fillStyle = '#1d4a3a';
         ctx.fillRect(e.x + 4, e.y, e.w - 8, 12);
         ctx.fillStyle = '#0d0d0d';
         ctx.fillRect(e.x + 6, e.y + 12, 4, 4);
         ctx.fillRect(e.x + e.w - 10, e.y + 12, 4, 4);
       } else if (e.type === 'data') {
-        ctx.fillStyle = '#f4d83c';
+        ctx.fillStyle = '#79b8ff';
         ctx.fillRect(e.x, e.y, e.w, e.h);
-        ctx.fillStyle = '#9f7f04';
+        ctx.fillStyle = '#274f8c';
         ctx.fillRect(e.x + 4, e.y + 4, e.w - 8, e.h - 8);
       }
     }
@@ -844,11 +898,11 @@
     }
 
     const progressRatio = Math.min(1, run.distance / run.targetDistance);
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillStyle = 'rgba(0,0,0,0.26)';
     ctx.fillRect(20, 20, WIDTH - 40, 14);
-    ctx.fillStyle = '#2f8b57';
+    ctx.fillStyle = '#8db3ff';
     ctx.fillRect(20, 20, (WIDTH - 40) * progressRatio, 14);
-    ctx.fillStyle = '#1f2730';
+    ctx.fillStyle = '#eef2ff';
     ctx.font = '12px sans-serif';
     ctx.fillText(
       `Semester progress ${Math.round(progressRatio * 100)}% | Hits ${run.hitsTaken}/3 | Coins ${run.pickups}${
@@ -864,15 +918,15 @@
 
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
     const bg = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
-    bg.addColorStop(0, '#e8f4ff');
-    bg.addColorStop(1, '#d9e8ff');
+    bg.addColorStop(0, '#151a34');
+    bg.addColorStop(1, '#0f1224');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
     // Desk strip at bottom.
-    ctx.fillStyle = '#d6c6aa';
+    ctx.fillStyle = '#2c2a35';
     ctx.fillRect(0, HEIGHT - 92, WIDTH, 92);
-    ctx.fillStyle = '#b79f78';
+    ctx.fillStyle = '#3a3444';
     ctx.fillRect(0, HEIGHT - 92, WIDTH, 12);
 
     // Semester transition line.
@@ -882,10 +936,10 @@
     const barY = 88;
     ctx.fillStyle = 'rgba(0,0,0,0.12)';
     ctx.fillRect(barX, barY, barW, 14);
-    ctx.fillStyle = '#4b80d1';
+    ctx.fillStyle = '#859cff';
     ctx.fillRect(barX, barY, Math.max(40, barW * (0.2 + 0.6 * t)), 14);
 
-    ctx.fillStyle = '#1f2730';
+    ctx.fillStyle = '#edf1ff';
     ctx.font = 'bold 22px sans-serif';
     const txt = `Planning Semester ${state.semester}`;
     const wobble = Math.sin(state.betweenAnimTime * 0.06) * 3;
@@ -907,9 +961,9 @@
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
       ctx.globalAlpha = p.alpha;
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#dde4ff';
       ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx.strokeStyle = '#9fb2c8';
+      ctx.strokeStyle = '#7988b4';
       ctx.strokeRect(-p.w / 2, -p.h / 2, p.w, p.h);
       ctx.restore();
       ctx.globalAlpha = 1;
