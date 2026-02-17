@@ -1018,12 +1018,50 @@
     const p = run.player;
     const blink = run.invulnFrames > 0 && run.invulnFrames % 8 < 4;
     if (!blink) {
-      ctx.fillStyle = '#d73e3e';
-      ctx.fillRect(p.x, p.y, p.w, p.h);
-      ctx.fillStyle = '#2647b1';
-      ctx.fillRect(p.x + 4, p.y + 18, p.w - 8, p.h - 20);
-      ctx.fillStyle = '#f4d7b3';
-      ctx.fillRect(p.x + 6, p.y + 4, p.w - 12, 10);
+      const stride = p.onGround ? Math.sin(run.distance * 0.22) * 2.2 : 0;
+      const lean = p.vx * 0.12;
+      const bx = p.x;
+      const by = p.y;
+
+      // Hair
+      ctx.fillStyle = '#2a1f1a';
+      ctx.beginPath();
+      ctx.ellipse(bx + 14, by + 6, 8, 6, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+
+      // Head + neck
+      ctx.fillStyle = '#f2d2ba';
+      ctx.beginPath();
+      ctx.ellipse(bx + 14, by + 10, 7.2, 6.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(bx + 12, by + 14, 4, 3);
+
+      // Eyes
+      ctx.fillStyle = '#131722';
+      ctx.fillRect(bx + 11, by + 9, 1.6, 1.6);
+      ctx.fillRect(bx + 15, by + 9, 1.6, 1.6);
+
+      // Torso (hoodie/shirt)
+      ctx.fillStyle = '#cc3f45';
+      ctx.fillRect(bx + 7 + lean, by + 16, 14, 13);
+
+      // Arms
+      ctx.fillStyle = '#f2d2ba';
+      ctx.fillRect(bx + 5 + lean, by + 18 + stride * 0.3, 3, 9);
+      ctx.fillRect(bx + 20 + lean, by + 18 - stride * 0.3, 3, 9);
+
+      // Pants
+      ctx.fillStyle = '#2f4fae';
+      ctx.fillRect(bx + 8 + lean, by + 27, 12, 9);
+
+      // Legs + shoes
+      ctx.fillStyle = '#30466f';
+      ctx.fillRect(bx + 8 + lean + stride * 0.35, by + 34, 4, 8);
+      ctx.fillRect(bx + 16 + lean - stride * 0.35, by + 34, 4, 8);
+      ctx.fillStyle = '#1b1f2a';
+      ctx.fillRect(bx + 7 + lean + stride * 0.35, by + 41, 6, 2.5);
+      ctx.fillRect(bx + 15 + lean - stride * 0.35, by + 41, 6, 2.5);
+
       if (state.stats.energy <= LOW_ENERGY_SWEAT_THRESHOLD) {
         const sweatShift = Math.sin(run.distance * 0.06) * 2;
         ctx.fillStyle = '#8dd3ff';
