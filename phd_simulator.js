@@ -370,7 +370,7 @@
       moveSpeed: 6.1 * motivationFactor + (state.semester - 1) * 0.55,
       jumpVel: -11.8,
       jumpBonus: 0,
-      targetDistance: 3200 + (state.semester - 1) * 450,
+      targetDistance: (3200 + (state.semester - 1) * 450) * 2,
       hazardRate: 0.034 * semesterScale + coinDrivenHazard,
       enemyRate: 0.028 * semesterScale + coinDrivenEnemy,
       pickupRate: coinRateByIdeas,
@@ -428,7 +428,7 @@
     run.enemyRate = Math.max(0.002, run.enemyRate);
     run.pickupRate = Math.max(0.004, run.pickupRate);
     run.turtleRate = Math.max(0.001, run.turtleRate);
-    run.targetDistance = Math.max(1800, run.targetDistance);
+    run.targetDistance = Math.max(3600, run.targetDistance);
 
     return run;
   }
