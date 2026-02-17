@@ -704,6 +704,7 @@
   function updateRun() {
     const run = state.run;
     const p = run.player;
+    const exhausted = state.stats.energy <= LOW_ENERGY_SWEAT_THRESHOLD;
 
     if (run.distance >= run.targetDistance) {
       finishSemester(true);
@@ -711,12 +712,12 @@
     }
 
     if (run.slowTimer > 0) run.slowTimer -= 1;
-    const speedFactor = run.slowTimer > 0 ? 0.58 : 1;
+    const speedFactor = (run.slowTimer > 0 ? 0.58 : 1) * (exhausted ? 0.35 : 1);
     p.vx = 0;
     if (keys.a) p.vx = -run.moveSpeed * speedFactor;
     if (keys.d) p.vx = run.moveSpeed * speedFactor;
 
-    if (keys.w && p.onGround) {
+    if (!exhausted && keys.w && p.onGround) {
       p.vy = run.jumpVel + run.jumpBonus;
       p.onGround = false;
       run.jumpCount += 1;
@@ -827,6 +828,7 @@
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       return;
     }
+    const exhausted = state.stats.energy <= LOW_ENERGY_SWEAT_THRESHOLD;
 
     const semesterThemes = [
       {
@@ -1043,6 +1045,8 @@
     ctx.fillText(
       `Semester progress ${Math.round(progressRatio * 100)}% | Hits ${run.hitsTaken}/3 | Coins ${run.pickups}${
         run.slowTimer > 0 ? ' | Slowed by admin duty' : ''
+      }${exhausted ? ' | Exhausted: no jump' : ''}${
+        exhausted && run.slowTimer <= 0 ? ' | Very slow' : ''
       }`,
       24,
       18
@@ -1205,7 +1209,14 @@
       keys[k] = down;
       e.preventDefault();
     }
-    if (down && k === 'k' && state.phase === 'run' && state.run && state.run.player.onGround) {
+    if (
+      down &&
+      k === 'k' &&
+      state.phase === 'run' &&
+      state.run &&
+      state.run.player.onGround &&
+      state.stats.energy > LOW_ENERGY_SWEAT_THRESHOLD
+    ) {
       state.run.jumpCount += 1;
       state.run.player.vy = state.run.jumpVel + state.run.jumpBonus + HIGH_JUMP_EXTRA;
       state.run.player.onGround = false;
