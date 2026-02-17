@@ -605,8 +605,8 @@
   }
 
   function applyJumpFatigue() {
-    state.stats.energy -= 1;
-    state.stats.motivation -= 1;
+    state.stats.energy -= 3;
+    state.stats.motivation -= 3;
     clampStats();
     updateHUD();
     if (state.stats.energy <= 0 || state.stats.motivation <= 0 || state.stats.funding <= 0 || state.stats.trust <= 0) {
@@ -627,8 +627,6 @@
       run.pickups * RESEARCH_PER_DATA + (success ? SUCCESS_RESEARCH_BONUS : 0) + run.semesterResearchBonus;
 
     state.stats.research += baseResearch;
-    state.stats.energy -= run.energyFlatPenalty + run.distance * run.energyDrain * run.energyDistancePenaltyMul;
-    state.stats.motivation += success ? run.motivationBaseSuccess : run.motivationBaseFail;
     state.stats.funding += success ? run.fundingBaseSuccess : run.fundingBaseFail;
     state.stats.funding -= run.hitsTaken * 1.5;
     state.stats.trust += success ? run.trustBaseSuccess : run.trustBaseFail;
@@ -643,7 +641,6 @@
       state.burnoutCount += 1;
       const burnoutDrop = 12 + state.burnoutCount * 5;
       state.stats.research -= burnoutDrop;
-      state.stats.motivation -= 8;
       state.stats.trust -= 5;
       state.stats.funding -= 4;
       clampStats();
