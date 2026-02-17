@@ -23,6 +23,7 @@
   const SUCCESS_RESEARCH_BONUS = 2;
   const DEEPWORK_RESEARCH_BONUS = 10;
   const BURNOUT_THRESHOLD = 34;
+  const LOW_ENERGY_SWEAT_THRESHOLD = 35;
 
   const keys = { w: false, a: false, s: false, d: false };
   let audioCtx = null;
@@ -407,7 +408,6 @@
       energyFlatPenalty: 16,
       energyHitPenalty: 15,
       energyDistancePenaltyMul: 0.05,
-      energyJumpPenalty: 0.42,
       motivationBaseSuccess: 2,
       motivationBaseFail: -14,
       motivationHitPenalty: 10,
@@ -604,6 +604,18 @@
     actionBtn.disabled = true;
   }
 
+  function applyJumpFatigue() {
+    state.stats.energy -= 1;
+    state.stats.motivation -= 1;
+    clampStats();
+    updateHUD();
+    if (state.stats.energy <= 0 || state.stats.motivation <= 0 || state.stats.funding <= 0 || state.stats.trust <= 0) {
+      endGame(false, 'You burned out from sustained effort.');
+      return true;
+    }
+    return false;
+  }
+
   function finishSemester(success) {
     const run = state.run;
     if (success) {
@@ -615,10 +627,7 @@
       run.pickups * RESEARCH_PER_DATA + (success ? SUCCESS_RESEARCH_BONUS : 0) + run.semesterResearchBonus;
 
     state.stats.research += baseResearch;
-    state.stats.energy -=
-      run.energyFlatPenalty +
-      run.distance * run.energyDrain * run.energyDistancePenaltyMul +
-      run.jumpCount * run.energyJumpPenalty;
+    state.stats.energy -= run.energyFlatPenalty + run.distance * run.energyDrain * run.energyDistancePenaltyMul;
     state.stats.motivation += success ? run.motivationBaseSuccess : run.motivationBaseFail;
     state.stats.funding += success ? run.fundingBaseSuccess : run.fundingBaseFail;
     state.stats.funding -= run.hitsTaken * 1.5;
@@ -715,6 +724,7 @@
       p.onGround = false;
       run.jumpCount += 1;
       soundJump();
+      if (applyJumpFatigue()) return;
     }
 
     if (keys.s && !p.onGround) p.vy += 0.4;
@@ -1008,6 +1018,16 @@
       ctx.fillRect(p.x + 4, p.y + 18, p.w - 8, p.h - 20);
       ctx.fillStyle = '#f4d7b3';
       ctx.fillRect(p.x + 6, p.y + 4, p.w - 12, 10);
+      if (state.stats.energy <= LOW_ENERGY_SWEAT_THRESHOLD) {
+        const sweatShift = Math.sin(run.distance * 0.06) * 2;
+        ctx.fillStyle = '#8dd3ff';
+        ctx.beginPath();
+        ctx.arc(p.x + p.w - 2, p.y + 8 + sweatShift, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p.x + p.w + 2, p.y + 13 + sweatShift, 1.9, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     if (run.hitFlashFrames > 0) {
@@ -1193,6 +1213,7 @@
       state.run.player.vy = state.run.jumpVel + state.run.jumpBonus + HIGH_JUMP_EXTRA;
       state.run.player.onGround = false;
       soundHighJump();
+      applyJumpFatigue();
       e.preventDefault();
     }
   }
