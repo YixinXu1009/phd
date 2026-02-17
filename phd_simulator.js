@@ -611,10 +611,8 @@
     return 1 - reduction;
   }
 
-  function applyJumpFatigue() {
-    const jumpEnergyCost = Math.max(1, Math.round(3 * motivationEnergyFactor()));
-    state.stats.energy -= jumpEnergyCost;
-    state.stats.motivation -= 3;
+  function applyJumpFatigue(baseEnergyCost) {
+    state.stats.energy -= baseEnergyCost;
     clampStats();
     updateHUD();
     if (state.stats.energy <= 0 || state.stats.motivation <= 0 || state.stats.funding <= 0 || state.stats.trust <= 0) {
@@ -730,7 +728,7 @@
       p.onGround = false;
       run.jumpCount += 1;
       soundJump();
-      if (applyJumpFatigue()) return;
+      if (applyJumpFatigue(2)) return;
     }
 
     if (keys.s && !p.onGround) p.vy += 0.4;
@@ -1248,7 +1246,7 @@
       state.run.player.vy = state.run.jumpVel + state.run.jumpBonus + HIGH_JUMP_EXTRA;
       state.run.player.onGround = false;
       soundHighJump();
-      applyJumpFatigue();
+      if (applyJumpFatigue(3)) return;
       e.preventDefault();
     }
   }
