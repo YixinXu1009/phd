@@ -1285,7 +1285,6 @@
     } else {
       drawRun();
     }
-    requestAnimationFrame(frame);
   }
 
   function onKey(e, down) {
@@ -1322,5 +1321,32 @@
   };
 
   updateHUD();
-  frame();
+
+  // Phaser-managed main loop (Canvas renderer) so the project runs on Phaser.
+  if (window.Phaser) {
+    const existingCanvas = canvas;
+    const gameConfig = {
+      type: Phaser.CANVAS,
+      width: WIDTH,
+      height: HEIGHT,
+      canvas: existingCanvas,
+      parent: 'game-wrap',
+      transparent: false,
+      scene: {
+        create() {},
+        update() {
+          frame();
+        },
+      },
+    };
+    // eslint-disable-next-line no-new
+    new Phaser.Game(gameConfig);
+  } else {
+    // Fallback for environments where Phaser failed to load.
+    const fallbackLoop = () => {
+      frame();
+      requestAnimationFrame(fallbackLoop);
+    };
+    fallbackLoop();
+  }
 })();
