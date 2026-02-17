@@ -1455,6 +1455,7 @@
       canvas: existingCanvas,
       parent: 'game-wrap',
       transparent: false,
+      clearBeforeRender: false,
       scene: {
         create() {},
         update() {
