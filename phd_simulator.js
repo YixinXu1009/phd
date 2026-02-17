@@ -293,6 +293,32 @@
     playTone(250, 0.09, 'sawtooth', 0.06, 120);
   }
 
+  function soundJump() {
+    playTone(360, 0.06, 'triangle', 0.035, 460);
+  }
+
+  function soundHighJump() {
+    playTone(300, 0.11, 'square', 0.045, 620);
+  }
+
+  function soundCoin() {
+    playTone(720, 0.05, 'triangle', 0.03, 980);
+  }
+
+  function soundSemesterSuccess() {
+    playTone(420, 0.08, 'triangle', 0.04, 620);
+    setTimeout(() => playTone(620, 0.1, 'triangle', 0.045, 820), 60);
+  }
+
+  function soundSemesterFail() {
+    playTone(330, 0.09, 'sawtooth', 0.04, 220);
+    setTimeout(() => playTone(220, 0.12, 'sawtooth', 0.05, 130), 70);
+  }
+
+  function soundEvent() {
+    playTone(520, 0.06, 'square', 0.03, 700);
+  }
+
   function sampleCards(count) {
     const pool = [...cards];
     const selected = [];
@@ -470,6 +496,7 @@
     state.run = makeRun();
     state.currentEvent = sampleEvent();
     state.currentEvent.apply(state.stats, state.run);
+    soundEvent();
     clampStats();
     updateHUD();
     const options = sampleCards(3);
@@ -535,6 +562,11 @@
 
   function finishSemester(success) {
     const run = state.run;
+    if (success) {
+      soundSemesterSuccess();
+    } else {
+      soundSemesterFail();
+    }
     const baseResearch =
       run.pickups * RESEARCH_PER_DATA + (success ? SUCCESS_RESEARCH_BONUS : 0) + run.semesterResearchBonus;
 
@@ -635,6 +667,7 @@
       p.vy = run.jumpVel + run.jumpBonus;
       p.onGround = false;
       run.jumpCount += 1;
+      soundJump();
     }
 
     if (keys.s && !p.onGround) p.vy += 0.4;
@@ -688,6 +721,7 @@
       if (rectHit(p, e)) {
         if (e.type === 'data') {
           run.pickups += 1;
+          soundCoin();
           continue;
         }
         if (e.type === 'turtle') {
@@ -904,6 +938,7 @@
       state.run.jumpCount += 1;
       state.run.player.vy = state.run.jumpVel + state.run.jumpBonus + HIGH_JUMP_EXTRA;
       state.run.player.onGround = false;
+      soundHighJump();
       e.preventDefault();
     }
   }
