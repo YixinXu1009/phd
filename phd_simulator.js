@@ -427,6 +427,8 @@
       },
       entities: [],
       entityCursor: WIDTH + 120,
+      terrainFeatures: [],
+      terrainCursor: WIDTH + 180,
       ideaFactor,
       ideaCurve,
       nextGuaranteedDataAt: 980 - ideaCurve * 820,
@@ -533,6 +535,52 @@
     }
 
     run.entityCursor += rand(30, 60);
+  }
+
+  function spawnTerrainFeature(run) {
+    const roll = Math.random();
+    if (roll < 0.34) {
+      const w = rand(95, 160);
+      run.terrainFeatures.push({
+        type: 'platform',
+        x: run.terrainCursor,
+        y: rand(330, 415),
+        w,
+        h: 12,
+      });
+      run.terrainCursor += w + rand(170, 290);
+      return;
+    }
+
+    if (roll < 0.68) {
+      const steps = Math.floor(rand(3, 6));
+      const stepW = 24;
+      const stepH = 10;
+      run.terrainFeatures.push({
+        type: 'stairs',
+        x: run.terrainCursor,
+        baseY: GROUND_Y,
+        steps,
+        stepW,
+        stepH,
+        w: steps * stepW,
+      });
+      run.terrainCursor += steps * stepW + rand(180, 320);
+      return;
+    }
+
+    const w = rand(120, 190);
+    const y1 = rand(320, 410);
+    const y2 = Math.max(300, Math.min(430, y1 + rand(-42, 42)));
+    run.terrainFeatures.push({
+      type: 'slope',
+      x: run.terrainCursor,
+      y1,
+      y2,
+      w,
+      h: 12,
+    });
+    run.terrainCursor += w + rand(170, 300);
   }
 
   function beginCardDraft() {
@@ -740,14 +788,9 @@
     if (p.x < 20) p.x = 20;
     if (p.x + p.w > WIDTH - 20) p.x = WIDTH - 20 - p.w;
 
+    const prevBottom = p.y + p.h;
     p.y += p.vy;
     p.onGround = false;
-
-    if (p.y + p.h >= GROUND_Y) {
-      p.y = GROUND_Y - p.h;
-      p.vy = 0;
-      p.onGround = true;
-    }
 
     run.distance += run.scrollSpeed;
 
@@ -765,6 +808,9 @@
     while (run.entityCursor - run.distance < WIDTH + 120) {
       spawnEntity(run);
     }
+    while (run.terrainCursor - run.distance < WIDTH + 200) {
+      spawnTerrainFeature(run);
+    }
 
     for (const e of run.entities) {
       e.x -= run.scrollSpeed;
@@ -775,6 +821,48 @@
       } else if (e.type === 'demon_brute') {
         e.y = e.baseY + Math.sin((run.distance + e.x) * 0.012) * 2;
       }
+    }
+    for (const t of run.terrainFeatures) {
+      t.x -= run.scrollSpeed;
+    }
+
+    let landed = false;
+    let bestSurfaceY = GROUND_Y;
+    for (const t of run.terrainFeatures) {
+      let surfaceY = null;
+      if (t.type === 'platform') {
+        const overlapX = p.x + p.w > t.x && p.x < t.x + t.w;
+        if (overlapX) surfaceY = t.y;
+      } else if (t.type === 'stairs') {
+        const overlapX = p.x + p.w > t.x && p.x < t.x + t.w;
+        if (overlapX) {
+          const footX = p.x + p.w * 0.5;
+          const local = Math.max(0, Math.min(t.w - 1, footX - t.x));
+          const idx = Math.floor(local / t.stepW);
+          surfaceY = t.baseY - (idx + 1) * t.stepH;
+        }
+      } else if (t.type === 'slope') {
+        const footX = p.x + p.w * 0.5;
+        if (footX >= t.x && footX <= t.x + t.w) {
+          const local = (footX - t.x) / t.w;
+          surfaceY = t.y1 + (t.y2 - t.y1) * local;
+        }
+      }
+      if (surfaceY === null) continue;
+      if (p.vy >= 0 && prevBottom <= surfaceY + 8 && p.y + p.h >= surfaceY && surfaceY < bestSurfaceY) {
+        bestSurfaceY = surfaceY;
+        landed = true;
+      }
+    }
+
+    if (landed) {
+      p.y = bestSurfaceY - p.h;
+      p.vy = 0;
+      p.onGround = true;
+    } else if (p.y + p.h >= GROUND_Y) {
+      p.y = GROUND_Y - p.h;
+      p.vy = 0;
+      p.onGround = true;
     }
 
     if (run.invulnFrames > 0) run.invulnFrames -= 1;
@@ -825,6 +913,7 @@
       kept.push(e);
     }
     run.entities = kept;
+    run.terrainFeatures = run.terrainFeatures.filter((t) => t.x + t.w > -30);
 
     updateHUD();
   }
@@ -948,6 +1037,40 @@
       const w = 40 + (i % 3) * 16;
       const h = 5 + (i % 4) * 4;
       ctx.fillRect(x, GROUND_Y - h, w, h);
+    }
+
+    // Traversable terrain details: platforms, stairs, and slopes.
+    for (const t of run.terrainFeatures) {
+      if (t.type === 'platform') {
+        ctx.fillStyle = '#3f456d';
+        ctx.fillRect(t.x, t.y, t.w, t.h);
+        ctx.fillStyle = '#5e6da3';
+        ctx.fillRect(t.x, t.y, t.w, 3);
+      } else if (t.type === 'stairs') {
+        for (let i = 0; i < t.steps; i += 1) {
+          const sy = t.baseY - (i + 1) * t.stepH;
+          const sx = t.x + i * t.stepW;
+          ctx.fillStyle = '#3d3f62';
+          ctx.fillRect(sx, sy, t.stepW, t.stepH);
+          ctx.fillStyle = '#59679a';
+          ctx.fillRect(sx, sy, t.stepW, 2);
+        }
+      } else if (t.type === 'slope') {
+        ctx.fillStyle = '#394063';
+        ctx.beginPath();
+        ctx.moveTo(t.x, t.y1);
+        ctx.lineTo(t.x + t.w, t.y2);
+        ctx.lineTo(t.x + t.w, t.y2 + t.h);
+        ctx.lineTo(t.x, t.y1 + t.h);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#5d6ea8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(t.x, t.y1);
+        ctx.lineTo(t.x + t.w, t.y2);
+        ctx.stroke();
+      }
     }
 
     // Low fog layer.
