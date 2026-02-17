@@ -712,7 +712,7 @@
     }
 
     if (run.slowTimer > 0) run.slowTimer -= 1;
-    const speedFactor = (run.slowTimer > 0 ? 0.58 : 1) * (exhausted ? 0.35 : 1);
+    const speedFactor = (run.slowTimer > 0 ? 0.58 : 1) * (exhausted ? 0.15 : 1);
     p.vx = 0;
     if (keys.a) p.vx = -run.moveSpeed * speedFactor;
     if (keys.d) p.vx = run.moveSpeed * speedFactor;
