@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PhD Simulator</title>
+    <link rel="stylesheet" href="phd_simulator.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>PhD Simulator</h1>
+      <p class="subtitle">Card strategy + side-scroller semester runs</p>
+
+      <section class="hud" id="hud">
+        <div>Semester: <span id="semester">1</span>/4</div>
+        <div>Energy: <span id="energy">100</span></div>
+        <div>Motivation: <span id="motivation">100</span></div>
+        <div>Funding: <span id="funding">50</span></div>
+        <div>Advisor Trust: <span id="trust">50</span></div>
+        <div>Research: <span id="research">0</span>/100</div>
+        <div>Ideas: <span id="ideas">10</span></div>
+      </section>
+
+      <canvas id="game" width="960" height="540" aria-label="PhD simulator game"></canvas>
+
+      <section class="panel" id="panel">
+        <h2 id="panel-title">Welcome</h2>
+        <p id="panel-text">Survive 4 semesters and reach 100 research progress without burning out.</p>
+        <div id="card-area" class="card-area"></div>
+        <div class="actions">
+          <button id="action-btn">Start</button>
+        </div>
+        <p class="controls">Controls in run: W jump, K high jump, A/D move, S fast-fall</p>
+      </section>
+    </main>
+
+    <script src="phd_simulator.js"></script>
+  </body>
+</html>
