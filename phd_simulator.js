@@ -46,6 +46,9 @@
     currentEvent: null,
     betweenAnimTime: 0,
     betweenParticles: [],
+    endAnimTime: 0,
+    endParticles: [],
+    endWon: false,
   };
 
   const cards = [
@@ -353,6 +356,23 @@
     }
   }
 
+  function initEndAnimation(won) {
+    state.endAnimTime = 0;
+    state.endWon = won;
+    state.endParticles = [];
+    const count = won ? 34 : 24;
+    for (let i = 0; i < count; i += 1) {
+      state.endParticles.push({
+        x: rand(30, WIDTH - 30),
+        y: won ? rand(120, 300) : rand(260, 430),
+        vx: rand(-1.4, 1.4),
+        vy: won ? rand(-3.8, -1.8) : rand(-0.4, 0.5),
+        size: rand(5, 12),
+        alpha: rand(0.35, 0.9),
+      });
+    }
+  }
+
   function makeRun() {
     const semesterScale = 1 + (state.semester - 1) * 0.13;
     const motivationFactor = Math.max(0.75, state.stats.motivation / 100);
@@ -630,6 +650,7 @@
 
   function endGame(won, text) {
     state.phase = won ? 'win' : 'lose';
+    initEndAnimation(won);
     panelTitle.textContent = won ? 'Thesis Defended' : 'Program Ended';
     panelText.textContent = text;
     actionBtn.textContent = 'Restart Program';
@@ -643,6 +664,8 @@
       state.burnoutCount = 0;
       state.pendingRunMods = null;
       state.currentEvent = null;
+      state.endParticles = [];
+      state.endAnimTime = 0;
       updateHUD();
       beginCardDraft();
     };
@@ -970,12 +993,93 @@
     }
   }
 
+  function drawEndAnimation() {
+    state.endAnimTime += 1;
+    const won = state.endWon;
+
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    const bg = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+    if (won) {
+      bg.addColorStop(0, '#1a2146');
+      bg.addColorStop(1, '#2a3c72');
+    } else {
+      bg.addColorStop(0, '#170f1d');
+      bg.addColorStop(1, '#2a1d2a');
+    }
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    ctx.fillStyle = won ? '#2f355f' : '#2b2030';
+    ctx.fillRect(0, GROUND_Y, WIDTH, HEIGHT - GROUND_Y);
+
+    // Simple character pose.
+    const cx = WIDTH * 0.48;
+    const cy = GROUND_Y - 44;
+    ctx.fillStyle = won ? '#da4f4f' : '#6f6279';
+    ctx.fillRect(cx, cy, 30, 44);
+    ctx.fillStyle = '#f2d3b1';
+    ctx.fillRect(cx + 7, cy - 12, 16, 12);
+    ctx.fillStyle = '#2b376d';
+    ctx.fillRect(cx + 5, cy + 18, 20, 26);
+
+    if (won) {
+      const bob = Math.sin(state.endAnimTime * 0.08) * 3;
+      ctx.fillStyle = '#f6de7a';
+      ctx.beginPath();
+      ctx.arc(cx + 14, cy - 38 + bob, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#1a1f39';
+      ctx.font = 'bold 28px sans-serif';
+      ctx.fillText('PhD!', cx + 46, cy - 20 + bob);
+    } else {
+      const drip = 5 + Math.sin(state.endAnimTime * 0.12) * 2;
+      ctx.fillStyle = '#8aa0d2';
+      ctx.beginPath();
+      ctx.arc(cx + 15, cy - 20, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(cx + 14, cy - 16, 2, drip);
+      ctx.fillStyle = '#f0c9cc';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText('Burnout...', cx + 44, cy - 18);
+    }
+
+    // Particles: confetti for win, ash/rain for lose.
+    for (const p of state.endParticles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (won) {
+        p.vy += 0.05;
+        if (p.y > HEIGHT - 30) {
+          p.y = rand(60, 180);
+          p.x = rand(30, WIDTH - 30);
+          p.vy = rand(-3.8, -1.8);
+        }
+      } else {
+        p.vy += 0.015;
+        if (p.y > HEIGHT - 40) {
+          p.y = rand(80, 200);
+          p.x = rand(20, WIDTH - 20);
+          p.vy = rand(0.2, 1.1);
+        }
+      }
+      if (p.x < -10) p.x = WIDTH + 10;
+      if (p.x > WIDTH + 10) p.x = -10;
+
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = won ? '#ffe28d' : '#9ea6bc';
+      ctx.fillRect(p.x, p.y, p.size, won ? p.size : Math.max(2, p.size * 0.35));
+      ctx.globalAlpha = 1;
+    }
+  }
+
   function frame() {
     if (state.phase === 'run') {
       updateRun();
       drawRun();
     } else if (state.phase === 'between') {
       drawBetweenAnimation();
+    } else if (state.phase === 'win' || state.phase === 'lose') {
+      drawEndAnimation();
     } else {
       drawRun();
     }
