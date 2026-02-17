@@ -604,8 +604,16 @@
     actionBtn.disabled = true;
   }
 
+  function motivationEnergyFactor() {
+    const m = state.stats.motivation;
+    if (m <= 80) return 1;
+    const reduction = Math.min(0.6, (m - 80) * 0.015);
+    return 1 - reduction;
+  }
+
   function applyJumpFatigue() {
-    state.stats.energy -= 3;
+    const jumpEnergyCost = Math.max(1, Math.round(3 * motivationEnergyFactor()));
+    state.stats.energy -= jumpEnergyCost;
     state.stats.motivation -= 3;
     clampStats();
     updateHUD();
@@ -793,7 +801,8 @@
           run.invulnFrames = 50;
           run.hitFlashFrames = 16;
           soundHazardHit();
-          state.stats.energy -= run.energyHitPenalty;
+          const hazardEnergyCost = Math.max(1, Math.round(run.energyHitPenalty * motivationEnergyFactor()));
+          state.stats.energy -= hazardEnergyCost;
           state.stats.motivation -= run.motivationHitPenalty;
           clampStats();
           updateHUD();
