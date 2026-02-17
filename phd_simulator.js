@@ -1018,54 +1018,71 @@
     const p = run.player;
     const blink = run.invulnFrames > 0 && run.invulnFrames % 8 < 4;
     if (!blink) {
-      const stride = p.onGround ? Math.sin(run.distance * 0.22) * 2.2 : 0;
-      const lean = p.vx * 0.12;
+      const stride = p.onGround ? Math.sin(run.distance * 0.22) * 2.0 : 0;
+      const lean = p.vx * 0.11;
       const bx = p.x;
       const by = p.y;
 
-      // Hair
-      ctx.fillStyle = '#2a1f1a';
+      // Ground contact shadow.
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
       ctx.beginPath();
-      ctx.ellipse(bx + 14, by + 6, 8, 6, 0, Math.PI, Math.PI * 2);
+      ctx.ellipse(bx + 14, by + 43.5, 10, 2.4, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Head + neck
-      ctx.fillStyle = '#f2d2ba';
+      // Head and hair.
+      ctx.fillStyle = '#f0ceb4';
       ctx.beginPath();
-      ctx.ellipse(bx + 14, by + 10, 7.2, 6.2, 0, 0, Math.PI * 2);
+      ctx.ellipse(bx + 14.5, by + 9.8, 7.2, 6.6, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillRect(bx + 12, by + 14, 4, 3);
+      ctx.fillStyle = '#2c2019';
+      ctx.beginPath();
+      ctx.ellipse(bx + 14.5, by + 6.4, 7.4, 4.4, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+      // Ear.
+      ctx.fillStyle = '#e8bea0';
+      ctx.beginPath();
+      ctx.arc(bx + 20.6, by + 10.6, 1.2, 0, Math.PI * 2);
+      ctx.fill();
 
-      // Eyes
-      ctx.fillStyle = '#131722';
-      ctx.fillRect(bx + 12.2, by + 9.2, 1.6, 1.6);
-      ctx.fillRect(bx + 15.8, by + 9.2, 1.6, 1.6);
-      // Nose + mouth angled to the right.
-      ctx.fillStyle = '#e5b999';
-      ctx.fillRect(bx + 18.2, by + 11, 1.8, 2.2);
-      ctx.fillStyle = '#8d5b5b';
-      ctx.fillRect(bx + 16.4, by + 13.4, 2.8, 1.2);
+      // Face details looking right.
+      ctx.fillStyle = '#101524';
+      ctx.fillRect(bx + 13.2, by + 9.3, 1.5, 1.5);
+      ctx.fillRect(bx + 16.7, by + 9.3, 1.5, 1.5);
+      ctx.fillStyle = '#d8ac8d';
+      ctx.fillRect(bx + 18.4, by + 11, 1.8, 2.1);
+      ctx.fillStyle = '#845760';
+      ctx.fillRect(bx + 16.9, by + 13.2, 2.6, 1.1);
 
-      // Torso (hoodie/shirt)
+      // Neck + torso.
+      ctx.fillStyle = '#e8bea0';
+      ctx.fillRect(bx + 12.9 + lean * 0.2, by + 15.2, 3.4, 2.3);
       ctx.fillStyle = '#cc3f45';
-      ctx.fillRect(bx + 7 + lean, by + 16, 14, 13);
+      ctx.fillRect(bx + 7.2 + lean, by + 17.2, 14, 11.4);
+      // Hoodie seam.
+      ctx.fillStyle = '#b6363c';
+      ctx.fillRect(bx + 13.7 + lean, by + 17.5, 1.2, 10.8);
 
-      // Arms
-      ctx.fillStyle = '#f2d2ba';
-      ctx.fillRect(bx + 5 + lean, by + 18 + stride * 0.3, 3, 9);
-      ctx.fillRect(bx + 20 + lean, by + 18 - stride * 0.3, 3, 9);
+      // Arms + hands.
+      ctx.fillStyle = '#cf4b52';
+      ctx.fillRect(bx + 4.8 + lean, by + 18.2 + stride * 0.25, 3.2, 8.6);
+      ctx.fillRect(bx + 20.2 + lean, by + 18.2 - stride * 0.25, 3.2, 8.6);
+      ctx.fillStyle = '#efc9ad';
+      ctx.fillRect(bx + 4.7 + lean, by + 26.5 + stride * 0.25, 3.4, 2.2);
+      ctx.fillRect(bx + 20.1 + lean, by + 26.5 - stride * 0.25, 3.4, 2.2);
 
-      // Pants
+      // Waist + pants.
+      ctx.fillStyle = '#253e88';
+      ctx.fillRect(bx + 7.8 + lean, by + 28.4, 12.2, 2.2);
       ctx.fillStyle = '#2f4fae';
-      ctx.fillRect(bx + 8 + lean, by + 27, 12, 9);
+      ctx.fillRect(bx + 8.1 + lean, by + 30.6, 12, 5.1);
 
-      // Legs + shoes
-      ctx.fillStyle = '#30466f';
-      ctx.fillRect(bx + 8 + lean + stride * 0.35, by + 34, 4, 8);
-      ctx.fillRect(bx + 16 + lean - stride * 0.35, by + 34, 4, 8);
+      // Legs + shoes.
+      ctx.fillStyle = '#2d4370';
+      ctx.fillRect(bx + 8.2 + lean + stride * 0.4, by + 35.2, 4.1, 6.6);
+      ctx.fillRect(bx + 15.8 + lean - stride * 0.4, by + 35.2, 4.1, 6.6);
       ctx.fillStyle = '#1b1f2a';
-      ctx.fillRect(bx + 7 + lean + stride * 0.35, by + 41, 6, 2.5);
-      ctx.fillRect(bx + 15 + lean - stride * 0.35, by + 41, 6, 2.5);
+      ctx.fillRect(bx + 7.3 + lean + stride * 0.4, by + 41.3, 6.3, 2.2);
+      ctx.fillRect(bx + 14.9 + lean - stride * 0.4, by + 41.3, 6.3, 2.2);
 
       if (state.stats.energy <= LOW_ENERGY_SWEAT_THRESHOLD) {
         const sweatShift = Math.sin(run.distance * 0.06) * 2;
