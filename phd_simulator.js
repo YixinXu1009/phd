@@ -1038,8 +1038,13 @@
 
       // Eyes
       ctx.fillStyle = '#131722';
-      ctx.fillRect(bx + 11, by + 9, 1.6, 1.6);
-      ctx.fillRect(bx + 15, by + 9, 1.6, 1.6);
+      ctx.fillRect(bx + 12.2, by + 9.2, 1.6, 1.6);
+      ctx.fillRect(bx + 15.8, by + 9.2, 1.6, 1.6);
+      // Nose + mouth angled to the right.
+      ctx.fillStyle = '#e5b999';
+      ctx.fillRect(bx + 18.2, by + 11, 1.8, 2.2);
+      ctx.fillStyle = '#8d5b5b';
+      ctx.fillRect(bx + 16.4, by + 13.4, 2.8, 1.2);
 
       // Torso (hoodie/shirt)
       ctx.fillStyle = '#cc3f45';
