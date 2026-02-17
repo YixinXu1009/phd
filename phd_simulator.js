@@ -472,14 +472,38 @@
     }
 
     if (roll < run.hazardRate + run.enemyRate) {
-      const y = Math.random() < 0.35 ? rand(350, 400) : GROUND_Y - 34;
-      run.entities.push({
-        type: 'enemy',
-        x: run.entityCursor,
-        y,
-        w: 30,
-        h: 34,
-      });
+      const demonRoll = Math.random();
+      if (demonRoll < 0.42) {
+        const y = Math.random() < 0.35 ? rand(350, 400) : GROUND_Y - 34;
+        run.entities.push({
+          type: 'enemy',
+          x: run.entityCursor,
+          y,
+          w: 30,
+          h: 34,
+          baseY: y,
+        });
+      } else if (demonRoll < 0.74) {
+        const baseY = rand(250, 360);
+        run.entities.push({
+          type: 'demon_bat',
+          x: run.entityCursor,
+          y: baseY,
+          w: 34,
+          h: 22,
+          baseY,
+        });
+      } else {
+        const baseY = GROUND_Y - 42;
+        run.entities.push({
+          type: 'demon_brute',
+          x: run.entityCursor,
+          y: baseY,
+          w: 36,
+          h: 42,
+          baseY,
+        });
+      }
       run.entityCursor += rand(90, 160);
       return;
     }
@@ -731,7 +755,11 @@
     for (const e of run.entities) {
       e.x -= run.scrollSpeed;
       if (e.type === 'enemy') {
-        e.y += Math.sin((run.distance + e.x) * 0.01) * 0.25;
+        e.y = e.baseY + Math.sin((run.distance + e.x) * 0.01) * 6;
+      } else if (e.type === 'demon_bat') {
+        e.y = e.baseY + Math.sin((run.distance + e.x) * 0.026) * 16;
+      } else if (e.type === 'demon_brute') {
+        e.y = e.baseY + Math.sin((run.distance + e.x) * 0.012) * 2;
       }
     }
 
@@ -793,12 +821,56 @@
       return;
     }
 
+    const semesterThemes = [
+      {
+        skyTop: '#0b0d18',
+        skyMid: '#191c34',
+        skyBot: '#25253a',
+        moon: '#d7ddf9',
+        mountain: '#1e2239',
+        silhouette: '#1a1c2f',
+        ground: '#2a2c3f',
+        groundDetail: '#1d1f2f',
+      },
+      {
+        skyTop: '#0f0a1a',
+        skyMid: '#2a1834',
+        skyBot: '#3a2540',
+        moon: '#f0c6ff',
+        mountain: '#2b1e3b',
+        silhouette: '#241831',
+        ground: '#332541',
+        groundDetail: '#23182c',
+      },
+      {
+        skyTop: '#061319',
+        skyMid: '#122835',
+        skyBot: '#1f3f4a',
+        moon: '#bde9ea',
+        mountain: '#1a2d36',
+        silhouette: '#14252e',
+        ground: '#203743',
+        groundDetail: '#15252d',
+      },
+      {
+        skyTop: '#13060e',
+        skyMid: '#311224',
+        skyBot: '#492137',
+        moon: '#ffd2b2',
+        mountain: '#351a2a',
+        silhouette: '#2a1422',
+        ground: '#452737',
+        groundDetail: '#2c1824',
+      },
+    ];
+    const theme = semesterThemes[Math.min(semesterThemes.length - 1, Math.max(0, state.semester - 1))];
+
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
     const sky = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-    sky.addColorStop(0, '#0b0d18');
-    sky.addColorStop(0.55, '#191c34');
-    sky.addColorStop(1, '#25253a');
+    sky.addColorStop(0, theme.skyTop);
+    sky.addColorStop(0.55, theme.skyMid);
+    sky.addColorStop(1, theme.skyBot);
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
@@ -812,13 +884,13 @@
     ctx.beginPath();
     ctx.arc(moonX, moonY, 90, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#d7ddf9';
+    ctx.fillStyle = theme.moon;
     ctx.beginPath();
     ctx.arc(moonX, moonY, 28, 0, Math.PI * 2);
     ctx.fill();
 
     // Distant mountains.
-    ctx.fillStyle = '#1e2239';
+    ctx.fillStyle = theme.mountain;
     for (let i = 0; i < 9; i += 1) {
       const x = i * 150 - (run.distance * 0.07) % 150 - 60;
       const peakY = 230 + ((i * 37) % 70);
@@ -830,7 +902,7 @@
     }
 
     // Mid-ground spooky trees and ruins.
-    ctx.fillStyle = '#1a1c2f';
+    ctx.fillStyle = theme.silhouette;
     for (let i = 0; i < 10; i += 1) {
       const tx = i * 120 - (run.distance * 0.22) % 120 + 20;
       const baseY = GROUND_Y - 10;
@@ -852,9 +924,9 @@
     }
 
     // Uneven haunted ground silhouette.
-    ctx.fillStyle = '#2a2c3f';
+    ctx.fillStyle = theme.ground;
     ctx.fillRect(0, GROUND_Y, WIDTH, HEIGHT - GROUND_Y);
-    ctx.fillStyle = '#1d1f2f';
+    ctx.fillStyle = theme.groundDetail;
     for (let i = 0; i < 14; i += 1) {
       const x = i * 80 - (run.distance * 0.34) % 80;
       const w = 40 + (i % 3) * 16;
@@ -887,6 +959,30 @@
         ctx.fillStyle = '#111';
         ctx.fillRect(e.x + 6, e.y + 12, 4, 4);
         ctx.fillRect(e.x + 19, e.y + 12, 4, 4);
+      } else if (e.type === 'demon_bat') {
+        ctx.fillStyle = '#4b2d5c';
+        ctx.fillRect(e.x + 6, e.y + 6, e.w - 12, e.h - 10);
+        ctx.beginPath();
+        ctx.moveTo(e.x + 4, e.y + 8);
+        ctx.lineTo(e.x - 8, e.y + 16);
+        ctx.lineTo(e.x + 4, e.y + 18);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(e.x + e.w - 4, e.y + 8);
+        ctx.lineTo(e.x + e.w + 8, e.y + 16);
+        ctx.lineTo(e.x + e.w - 4, e.y + 18);
+        ctx.fill();
+        ctx.fillStyle = '#f1d7f9';
+        ctx.fillRect(e.x + 10, e.y + 10, 3, 3);
+        ctx.fillRect(e.x + e.w - 13, e.y + 10, 3, 3);
+      } else if (e.type === 'demon_brute') {
+        ctx.fillStyle = '#5b2c2c';
+        ctx.fillRect(e.x, e.y + 8, e.w, e.h - 8);
+        ctx.fillStyle = '#7f3a3a';
+        ctx.fillRect(e.x + 4, e.y, e.w - 8, 14);
+        ctx.fillStyle = '#f3d5bf';
+        ctx.fillRect(e.x + 8, e.y + 12, 4, 4);
+        ctx.fillRect(e.x + e.w - 12, e.y + 12, 4, 4);
       } else if (e.type === 'turtle') {
         ctx.fillStyle = '#2f6a52';
         ctx.fillRect(e.x, e.y + 8, e.w, e.h - 8);
